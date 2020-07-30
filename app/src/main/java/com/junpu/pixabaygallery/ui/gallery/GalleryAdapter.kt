@@ -10,7 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.junpu.pixabaygallery.R
 import com.junpu.pixabaygallery.bean.ImageBean
 import com.junpu.pixabaygallery.databinding.FragmentGalleryItemBinding
-import com.junpu.pixabaygallery.ui.image.ImageFragment
+import com.junpu.pixabaygallery.ui.image.IMAGE_INDEX
+import com.junpu.pixabaygallery.ui.image.IMAGE_LIST
 import kotlinx.android.synthetic.main.fragment_gallery_item.view.*
 
 /**
@@ -44,8 +45,8 @@ class GalleryAdapter : ListAdapter<ImageBean, GalleryViewHolder>(DIFF) {
             navController.navigate(
                 R.id.action_galleryFragment_to_imageFragment,
                 bundleOf(
-                    ImageFragment.IMAGE_LIST to currentList.toMutableList(),
-                    ImageFragment.IMAGE_INDEX to holder.adapterPosition
+                    IMAGE_LIST to currentList.toMutableList(),
+                    IMAGE_INDEX to holder.adapterPosition
                 )
             )
         }
