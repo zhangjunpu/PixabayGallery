@@ -11,11 +11,11 @@ import kotlinx.android.parcel.Parcelize
 data class StatusBean(
     var total: Int,
     var totalHits: Int,
-    var hits: List<Hit>?
+    var hits: List<ImageBean>?
 )
 
 @Parcelize
-data class Hit(
+data class ImageBean(
     var id: Int,
     var pageURL: String?,
     var type: String?,

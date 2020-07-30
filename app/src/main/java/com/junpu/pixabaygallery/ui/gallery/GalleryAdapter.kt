@@ -8,44 +8,48 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.junpu.pixabaygallery.R
-import com.junpu.pixabaygallery.bean.Hit
+import com.junpu.pixabaygallery.bean.ImageBean
 import com.junpu.pixabaygallery.databinding.FragmentGalleryItemBinding
 import com.junpu.pixabaygallery.ui.image.ImageFragment
-import com.junpu.toast.toast
+import kotlinx.android.synthetic.main.fragment_gallery_item.view.*
 
 /**
  *
  * @author junpu
  * @date 2020/7/29
  */
-class GalleryAdapter : ListAdapter<Hit, GalleryViewHolder>(DIFF) {
+class GalleryAdapter : ListAdapter<ImageBean, GalleryViewHolder>(DIFF) {
     companion object {
-        private val DIFF = object : DiffUtil.ItemCallback<Hit>() {
-            override fun areItemsTheSame(oldItem: Hit, newItem: Hit): Boolean {
+        private val DIFF = object : DiffUtil.ItemCallback<ImageBean>() {
+            override fun areItemsTheSame(oldItem: ImageBean, newItem: ImageBean): Boolean {
                 return oldItem.id == newItem.id
             }
 
-            override fun areContentsTheSame(oldItem: Hit, newItem: Hit): Boolean {
+            override fun areContentsTheSame(oldItem: ImageBean, newItem: ImageBean): Boolean {
                 return oldItem == newItem
             }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryViewHolder {
-        return GalleryViewHolder(
+        val holder = GalleryViewHolder(
             FragmentGalleryItemBinding.inflate(
                 LayoutInflater.from(parent.context),
                 parent,
                 false
-            ).apply {
-                imageView.setOnClickListener {
-                    val navController = it.findNavController()
-                    navController.navigate(
-                        R.id.action_galleryFragment_to_imageFragment,
-                        bundleOf(ImageFragment.KET_IMAGE to data)
-                    )
-                }
-            })
+            )
+        )
+        holder.itemView.imageView.setOnClickListener {
+            val navController = it.findNavController()
+            navController.navigate(
+                R.id.action_galleryFragment_to_imageFragment,
+                bundleOf(
+                    ImageFragment.IMAGE_LIST to currentList.toMutableList(),
+                    ImageFragment.IMAGE_INDEX to holder.adapterPosition
+                )
+            )
+        }
+        return holder
     }
 
     override fun onBindViewHolder(holder: GalleryViewHolder, position: Int) {

@@ -1,26 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
 
         <variable
-            name="data"
-            type="com.junpu.pixabaygallery.bean.Hit" />
+            name="vm"
+            type="com.junpu.pixabaygallery.ui.image.ImageViewModel" />
     </data>
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#000"
         tools:context=".ui.image.ImageFragment">
 
-        <com.github.chrisbanes.photoview.PhotoView
-            android:id="@+id/photoView"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:error="@{@drawable/ic_placeholder}"
-            app:imageUrl="@{data.largeImageURL}"
-            app:placeholder="@{@drawable/ic_placeholder}" />
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/textIndex"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="40dp"
+            android:text="@{@string/image_index(vm.imageIndex, vm.imageList.size())}"
+            android:textColor="#fff"
+            android:textSize="20sp"
+            tools:text="2 / 11" />
     </FrameLayout>
 </layout>

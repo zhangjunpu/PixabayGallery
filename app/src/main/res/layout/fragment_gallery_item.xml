@@ -7,7 +7,7 @@
 
         <variable
             name="data"
-            type="com.junpu.pixabaygallery.bean.Hit" />
+            type="com.junpu.pixabaygallery.bean.ImageBean" />
     </data>
 
     <ImageView
