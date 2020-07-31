@@ -9,7 +9,7 @@ import com.junpu.pixabaygallery.bean.ImageBean
 import com.junpu.pixabaygallery.databinding.FragmentImageItemBinding
 
 /**
- *
+ * ImageAdapter
  * @author junpu
  * @date 2020/7/30
  */
@@ -25,21 +25,31 @@ class ImageAdapter : ListAdapter<ImageBean, ImageViewHolder>(DIFF) {
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
-        return ImageViewHolder(
-            FragmentImageItemBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-        )
+        return ImageViewHolder.create(parent)
     }
 
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
-        holder.binding.run {
-            data = getItem(position)
+        holder.bind(getItem(position))
+    }
+}
+
+/**
+ * ImageViewHolder
+ * @author junpu
+ * @date 2020/7/31
+ */
+class ImageViewHolder(val binding: FragmentImageItemBinding) :
+    RecyclerView.ViewHolder(binding.root) {
+    companion object {
+        fun create(parent: ViewGroup) = ImageViewHolder(
+            FragmentImageItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        )
+    }
+
+    fun bind(image: ImageBean?) {
+        binding.run {
+            data = image
             executePendingBindings()
         }
     }
 }
-
-class ImageViewHolder(val binding: FragmentImageItemBinding) : RecyclerView.ViewHolder(binding.root)

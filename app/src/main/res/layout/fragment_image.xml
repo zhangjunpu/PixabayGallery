@@ -7,7 +7,7 @@
 
         <variable
             name="vm"
-            type="com.junpu.pixabaygallery.ui.image.ImageViewModel" />
+            type="com.junpu.pixabaygallery.ui.MainViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout

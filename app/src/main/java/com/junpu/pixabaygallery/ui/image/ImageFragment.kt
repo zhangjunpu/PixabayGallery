@@ -4,51 +4,37 @@ import android.Manifest
 import android.content.ContentValues
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.media.Image
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.view.get
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
-import com.junpu.log.L
 import com.junpu.pixabaygallery.R
-import com.junpu.pixabaygallery.bean.ImageBean
 import com.junpu.pixabaygallery.databinding.FragmentImageBinding
+import com.junpu.pixabaygallery.ui.MainViewModel
 import com.junpu.toast.toast
-import kotlinx.android.synthetic.main.fragment_gallery_item.view.*
 import kotlinx.android.synthetic.main.fragment_image.*
 import kotlinx.android.synthetic.main.fragment_image_item.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
 
-const val IMAGE_LIST = "image_list"
 const val IMAGE_INDEX = "image_index"
 const val REQUEST_PERMISSION_CODE = 1
 
 class ImageFragment : Fragment() {
 
-    private val viewModel: ImageViewModel by viewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        viewModel.run {
-            imageList.value = arguments?.getParcelableArrayList(IMAGE_LIST)
-            imageIndex.value = arguments?.getInt(IMAGE_INDEX)
-        }
-    }
+    private val viewModel by activityViewModels<MainViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -60,7 +46,7 @@ class ImageFragment : Fragment() {
             container,
             false
         ).apply {
-            vm = viewModel
+            vm = viewModel.apply { imageIndex.value = arguments?.getInt(IMAGE_INDEX) }
             lifecycleOwner
         }.root
     }
@@ -77,6 +63,7 @@ class ImageFragment : Fragment() {
                     viewModel.imageIndex.value = position + 1
                 }
             })
+            orientation = ViewPager2.ORIENTATION_VERTICAL
         }
 
         imageDownload.setOnClickListener {

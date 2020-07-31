@@ -2,26 +2,44 @@ package com.junpu.pixabaygallery.ui.gallery
 
 import android.graphics.Rect
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.junpu.log.L
 import com.junpu.pixabaygallery.R
+import com.junpu.pixabaygallery.net.LoadStatus
+import com.junpu.pixabaygallery.ui.MainViewModel
 import kotlinx.android.synthetic.main.fragment_gallery.*
 
 class GalleryFragment : Fragment() {
 
-    private val viewModel by viewModels<GalleryViewModel>()
+    private val viewModel by activityViewModels<MainViewModel>()
     private val adapter by lazy { GalleryAdapter() }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.main_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.refresh -> {
+                refreshLayout.isRefreshing = true
+                viewModel.invalidateDataSource()
+//                recyclerView.scrollToPosition(0)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        setHasOptionsMenu(true)
         return inflater.inflate(R.layout.fragment_gallery, container, false)
     }
 
@@ -33,7 +51,11 @@ class GalleryFragment : Fragment() {
                     // 防止位置变换
                     gapStrategy = StaggeredGridLayoutManager.GAP_HANDLING_NONE
                 }
-            adapter = this@GalleryFragment.adapter
+            adapter = this@GalleryFragment.adapter.also {
+                it.doOnRetry {
+                    viewModel.retry()
+                }
+            }
             addItemDecoration(object : RecyclerView.ItemDecoration() {
                 override fun getItemOffsets(
                     outRect: Rect,
@@ -52,8 +74,16 @@ class GalleryFragment : Fragment() {
         }
         viewModel.imageList.observe(viewLifecycleOwner, Observer {
             adapter.submitList(it)
+            L.ii(viewModel.loadStatus.value)
         })
-        viewModel.loadData()
+        viewModel.loadStatus.observe(viewLifecycleOwner, Observer {
+            refreshLayout.isRefreshing = it == LoadStatus.LOADING_INITIAL
+            adapter.loadStatus = it
+            adapter.notifyItemChanged(adapter.itemCount - 1)
+        })
+        refreshLayout?.setOnRefreshListener {
+            viewModel.invalidateDataSource()
+        }
     }
 
 }

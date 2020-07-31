@@ -4,22 +4,25 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
+import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.junpu.log.L
 import com.junpu.pixabaygallery.R
 import com.junpu.pixabaygallery.bean.ImageBean
+import com.junpu.pixabaygallery.databinding.FooterViewBinding
 import com.junpu.pixabaygallery.databinding.FragmentGalleryItemBinding
+import com.junpu.pixabaygallery.net.LoadStatus
 import com.junpu.pixabaygallery.ui.image.IMAGE_INDEX
-import com.junpu.pixabaygallery.ui.image.IMAGE_LIST
 import kotlinx.android.synthetic.main.fragment_gallery_item.view.*
 
 /**
- *
+ * GalleryAdapter
  * @author junpu
  * @date 2020/7/29
  */
-class GalleryAdapter : ListAdapter<ImageBean, GalleryViewHolder>(DIFF) {
+class GalleryAdapter : PagedListAdapter<ImageBean, RecyclerView.ViewHolder>(DIFF) {
     companion object {
         private val DIFF = object : DiffUtil.ItemCallback<ImageBean>() {
             override fun areItemsTheSame(oldItem: ImageBean, newItem: ImageBean): Boolean {
@@ -30,40 +33,103 @@ class GalleryAdapter : ListAdapter<ImageBean, GalleryViewHolder>(DIFF) {
                 return oldItem == newItem
             }
         }
+
+        private const val ITEM_TYPE_NORMAL = 0
+        private const val ITEM_TYPE_FOOTER = 1
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GalleryViewHolder {
-        val holder = GalleryViewHolder(
-            FragmentGalleryItemBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-        )
-        holder.itemView.imageView.setOnClickListener {
-            val navController = it.findNavController()
-            navController.navigate(
-                R.id.action_galleryFragment_to_imageFragment,
-                bundleOf(
-                    IMAGE_LIST to currentList.toMutableList(),
-                    IMAGE_INDEX to holder.adapterPosition
-                )
-            )
+    private var retryListener: (() -> Unit)? = null
+    var loadStatus: LoadStatus? = null
+
+    fun doOnRetry(listener: () -> Unit) {
+        retryListener = listener
+        retryListener?.invoke()
+    }
+
+    override fun getItemCount(): Int {
+        return super.getItemCount() + 1
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return when (position) {
+            itemCount - 1 -> ITEM_TYPE_FOOTER
+            else -> ITEM_TYPE_NORMAL
         }
-        return holder
     }
 
-    override fun onBindViewHolder(holder: GalleryViewHolder, position: Int) {
-        holder.binding.data = getItem(position)
-        holder.binding.executePendingBindings()
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            ITEM_TYPE_FOOTER -> FooterViewHolder.create(parent, retryListener)
+            else -> GalleryViewHolder.create(parent)
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder.itemViewType == ITEM_TYPE_NORMAL) {
+            holder as GalleryViewHolder
+            holder.bindData(getItem(position))
+        } else {
+            holder as FooterViewHolder
+            holder.bind(loadStatus)
+        }
     }
 
 }
 
 /**
- *
+ * GalleryViewHolder
  * @author junpu
  * @date 2020/7/29
  */
-class GalleryViewHolder(val binding: FragmentGalleryItemBinding) :
-    RecyclerView.ViewHolder(binding.root)
+class GalleryViewHolder(private val binding: FragmentGalleryItemBinding) :
+    RecyclerView.ViewHolder(binding.root) {
+
+    companion object {
+        fun create(parent: ViewGroup) = GalleryViewHolder(
+            FragmentGalleryItemBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        ).apply {
+            itemView.imageView.setOnClickListener {
+                val navController = it.findNavController()
+                navController.navigate(
+                    R.id.action_galleryFragment_to_imageFragment,
+                    bundleOf(IMAGE_INDEX to adapterPosition)
+                )
+            }
+        }
+    }
+
+    fun bindData(image: ImageBean?) {
+        binding.data = image
+        binding.executePendingBindings()
+//        itemView.imageView.layoutParams.height = image?.webformatHeight ?: ViewGroup.LayoutParams.WRAP_CONTENT
+    }
+}
+
+/**
+ * GalleryFooter
+ * @author junpu
+ * @date 2020/7/31
+ */
+class FooterViewHolder(private val binding: FooterViewBinding) :
+    RecyclerView.ViewHolder(binding.root) {
+
+    companion object {
+        fun create(parent: ViewGroup, retry: (() -> Unit)? = null) = FooterViewHolder(
+            FooterViewBinding.inflate(LayoutInflater.from(parent.context), parent, false).apply {
+                root.layoutParams.let {
+                    it as StaggeredGridLayoutManager.LayoutParams
+                    it.isFullSpan = true
+                }
+            }
+        ).apply {
+            itemView.setOnClickListener {
+                retry?.invoke()
+            }
+        }
+    }
+
+    fun bind(loadStatus: LoadStatus?) {
+        binding.loadStatus = loadStatus
+        binding.executePendingBindings()
+    }
+}
