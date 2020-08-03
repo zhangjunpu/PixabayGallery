@@ -8,7 +8,6 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.junpu.log.L
 import com.junpu.pixabaygallery.R
 import com.junpu.pixabaygallery.bean.ImageBean
 import com.junpu.pixabaygallery.databinding.FooterViewBinding
@@ -39,7 +38,29 @@ class GalleryAdapter : PagedListAdapter<ImageBean, RecyclerView.ViewHolder>(DIFF
     }
 
     private var retryListener: (() -> Unit)? = null
+    private var hasFooter = false
+        set(value) {
+            if (value) {
+                if (field) {
+                    notifyItemChanged(itemCount - 1)
+                } else {
+                    // 这两句写反会导致崩溃，个人理解：hasFooter影响着itemCount，如不先赋值而是直接notify会导致下标越界
+                    field = value
+                    notifyItemInserted(itemCount - 1)
+                }
+            } else {
+                if (field) {
+                    field = value
+                    notifyItemRemoved(itemCount - 1)
+                }
+            }
+        }
+
     var loadStatus: LoadStatus? = null
+        set(value) {
+            field = value
+            hasFooter = value != LoadStatus.LOADING_INITIAL
+        }
 
     fun doOnRetry(listener: () -> Unit) {
         retryListener = listener
@@ -47,14 +68,11 @@ class GalleryAdapter : PagedListAdapter<ImageBean, RecyclerView.ViewHolder>(DIFF
     }
 
     override fun getItemCount(): Int {
-        return super.getItemCount() + 1
+        return super.getItemCount() + if (hasFooter) 1 else 0
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (position) {
-            itemCount - 1 -> ITEM_TYPE_FOOTER
-            else -> ITEM_TYPE_NORMAL
-        }
+        return if (hasFooter && position == itemCount - 1) ITEM_TYPE_FOOTER else ITEM_TYPE_NORMAL
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

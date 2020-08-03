@@ -16,9 +16,9 @@ class MainViewModel : ViewModel() {
     val loadStatus = MutableLiveData<LoadStatus>()
     private val factory = PixabayDataSourceFactory(loadStatus)
     val imageIndex by lazy { MutableLiveData(0) }
-    val imageList by lazy { factory.toLiveData(2) }
+    val imageList by lazy { factory.toLiveData(1) }
 
-    fun invalidateDataSource() = factory.sourceLiveData.value?.invalidate()
+    fun invalidateDataSource() = imageList.value?.dataSource?.invalidate()
 
     fun retry() {
         factory.sourceLiveData.value?.retry?.invoke()

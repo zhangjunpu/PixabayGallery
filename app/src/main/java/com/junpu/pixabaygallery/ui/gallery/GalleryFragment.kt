@@ -14,6 +14,11 @@ import com.junpu.pixabaygallery.net.LoadStatus
 import com.junpu.pixabaygallery.ui.MainViewModel
 import kotlinx.android.synthetic.main.fragment_gallery.*
 
+/**
+ * 画廊页面
+ * @author junpu
+ * @date 2020/8/3
+ */
 class GalleryFragment : Fragment() {
 
     private val viewModel by activityViewModels<MainViewModel>()
@@ -29,7 +34,6 @@ class GalleryFragment : Fragment() {
             R.id.refresh -> {
                 refreshLayout.isRefreshing = true
                 viewModel.invalidateDataSource()
-//                recyclerView.scrollToPosition(0)
             }
         }
         return super.onOptionsItemSelected(item)
@@ -77,9 +81,8 @@ class GalleryFragment : Fragment() {
             L.ii(viewModel.loadStatus.value)
         })
         viewModel.loadStatus.observe(viewLifecycleOwner, Observer {
-            refreshLayout.isRefreshing = it == LoadStatus.LOADING_INITIAL
             adapter.loadStatus = it
-            adapter.notifyItemChanged(adapter.itemCount - 1)
+            refreshLayout.isRefreshing = it == LoadStatus.LOADING_INITIAL
         })
         refreshLayout?.setOnRefreshListener {
             viewModel.invalidateDataSource()

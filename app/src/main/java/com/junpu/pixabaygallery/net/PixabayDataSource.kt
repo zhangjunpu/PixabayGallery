@@ -20,10 +20,10 @@ class PixabayDataSource(private val loadStatus: MutableLiveData<LoadStatus>) :
         params: LoadInitialParams<Int>,
         callback: LoadInitialCallback<Int, ImageBean>
     ) {
-        loadStatus.postValue(LoadStatus.LOADING_INITIAL)
         retry = null
+        loadStatus.postValue(LoadStatus.LOADING_INITIAL)
         VolleyManager.instance.run {
-            get(hashMapOf(VolleyManager.PAGE to "1")) { isSuccess, result, e ->
+            get(hashMapOf(API_PAGE to "1")) { isSuccess, result, e ->
                 if (isSuccess) {
                     L.vv("1: ${result?.total} / ${result?.totalHits}")
                     loadStatus.postValue(LoadStatus.SUCCESS)
@@ -38,17 +38,17 @@ class PixabayDataSource(private val loadStatus: MutableLiveData<LoadStatus>) :
     }
 
     override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, ImageBean>) {
-        loadStatus.postValue(LoadStatus.LOADING)
         retry = null
+        loadStatus.postValue(LoadStatus.LOADING)
         VolleyManager.instance.run {
-            get(mapOf(VolleyManager.PAGE to "${params.key}")) { isSuccess, result, e ->
+            get(mapOf(API_PAGE to "${params.key}")) { isSuccess, result, e ->
                 if (isSuccess) {
                     L.vv("${params.key}: ${result?.total} / ${result?.totalHits}")
                     loadStatus.postValue(LoadStatus.SUCCESS)
                     callback.onResult(result?.hits ?: emptyList(), params.key + 1)
                     val total = result?.totalHits ?: 0
                 } else {
-                    if (e?.javaClass?.name == "com.android.volley.ClientError")
+                    if (e.toString() == "com.android.volley.ClientError")
                         loadStatus.postValue(LoadStatus.COMPLETE)
                     else {
                         retry = { loadAfter(params, callback) }

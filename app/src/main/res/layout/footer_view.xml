@@ -32,9 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@{loadStatus.msg}"
-            android:visibility="@{loadStatus == LoadStatus.LOADING_INITIAL ? View.GONE : View.VISIBLE}"
             tools:layout_editor_absoluteX="204dp"
             tools:layout_editor_absoluteY="105dp" />
-
     </LinearLayout>
 </layout>
